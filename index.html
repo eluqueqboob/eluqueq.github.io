@@ -39,8 +39,16 @@
         h1 {
             text-align: center;
             font-size: 24px;
-            margin-bottom: 25px;
+            margin-bottom: 5px;
             color: var(--primary);
+        }
+
+        .welcome-user {
+            text-align: center;
+            font-size: 16px;
+            font-weight: bold;
+            color: #4b5563;
+            margin-bottom: 25px;
         }
 
         .question {
@@ -140,6 +148,7 @@
 
 <div class="quiz-container">
     <h1 id="quizTitle">🏆 Simulacro de Evaluación</h1>
+    <div id="welcomeUser" class="welcome-user"></div>
     <form id="quizForm"></form>
     <div id="result" class="success-box"></div>
 </div>
@@ -147,20 +156,12 @@
 <script>
     const configuracionQuiz = {
         titulo: "📋 Simulacro Nombramiento Docente",
+        idUnico: "simulacro_ecuaciones_01", 
 
         // =========================================================================
-        // ⭐⭐⭐ 1. IDENTIFICADOR DEL EXAMEN ⭐⭐⭐
-        // IMPORTANTE: Cambia el "01" por "02", "03", etc., en cada nuevo examen 
-        // para que no se quede bloqueado con las respuestas del día anterior.
+        // 🛑 [SECCIÓN DE PREGUNTAS] - AQUÍ ESTÁN LAS DE PLANTEO DE ECUACIONES
         // =========================================================================
-        idUnico: "simulacro_nombramiento_02", 
-
-        // =========================================================================
-        // 🛑 [INICIO DE SECCIÓN DE PREGUNTAS] - SOLO REEMPLAZAR ESTE BLOQUE 🛑
-        // =========================================================================
-    
-            
-                preguntas: [
+        preguntas: [
             {
                 enunciado: "1. Si al doble de la edad de un docente se le suma 12 años, se obtiene 76 años. ¿Cuál es la edad del docente?",
                 alternativas: {
@@ -217,16 +218,15 @@
                 correcta: "B"
             }
         ]
-
-        // =========================================================================
-        // 🛑 [FIN DE SECCIÓN DE PREGUNTAS] - NO MODIFICAR NADA HACIA ABAJO 🛑
-        // =========================================================================
     };
 
-    // SISTEMA AUTOMÁTICO DE CARGA Y EVALUACIÓN (DEJAR IGUAL)
+    // =========================================================================
+    // ⚙️ SISTEMA AUTOMÁTICO (HACE TODO SOLO, NO TOCAR)
+    // =========================================================================
     const form = document.getElementById('quizForm');
     document.getElementById('quizTitle').textContent = configuracionQuiz.titulo;
 
+    // Cargar preguntas dinámicamente
     configuracionQuiz.preguntas.forEach((prog, index) => {
         const idPregunta = `q${index}`;
         let htmlOpciones = '';
@@ -250,11 +250,25 @@
     botonEnvio.onclick = calcularResultado;
     form.appendChild(botonEnvio);
 
+    // Sistema de registro automático al cargar la página
     window.onload = function() {
+        let nombreUsuario = localStorage.getItem(`nombre_${configuracionQuiz.idUnico}`);
+        
+        // Si no tiene nombre guardado para este examen, se lo pide
+        if (!nombreUsuario) {
+            nombreUsuario = prompt("¡Bienvenido al simulacro! Por favor, ingrese su nombre completo:");
+            if (!nombreUsuario || nombreUsuario.trim() === "") {
+                nombreUsuario = "Docente Anónimo";
+            }
+            localStorage.setItem(`nombre_${configuracionQuiz.idUnico}`, nombreUsuario);
+        }
+
+        document.getElementById('welcomeUser').textContent = `Docente: ${nombreUsuario}`;
+
         const yaRespondio = localStorage.getItem(`completado_${configuracionQuiz.idUnico}`);
         if (yaRespondio) {
             const notaGuardada = localStorage.getItem(`nota_${configuracionQuiz.idUnico}`);
-            bloquearQuiz(notaGuardada);
+            bloquearQuiz(notaGuardada, nombreUsuario);
         }
     };
 
@@ -282,23 +296,4 @@
                 }
             });
         });
-        localStorage.setItem(`completado_${configuracionQuiz.idUnico}`, 'true');
-        localStorage.setItem(`nota_${configuracionQuiz.idUnico}`, nota);
-        bloquearQuiz(nota);
-    }
 
-    function bloquearQuiz(nota) {
-        const total = configuracionQuiz.preguntas.length;
-        const boton = document.getElementById('submitBtn');
-        const contenedorResultado = document.getElementById('result');
-        boton.disabled = true;
-        boton.textContent = "Quiz Completado (Sin más intentos)";
-        const inputs = form.querySelectorAll('input[type="radio"]');
-        inputs.forEach(input => input.disabled = true);
-        contenedorResultado.textContent = `Ya has completado esta evaluación. Tu resultado fue: ${nota} de ${total} correctas.`;
-        contenedorResultado.style.display = 'block';
-        contenedorResultado.scrollIntoView({ behavior: 'smooth' });
-    }
-</script>
-</body>
-</html>
