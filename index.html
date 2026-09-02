@@ -1,28 +1,188 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi Primera Página en GitHub</title>
+    <title>Quiz Interactivo Autocalificable</title>
     <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --bg: #f3f4f6;
+            --card-bg: #ffffff;
+            --text: #1f2937;
+            --success: #10b981;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            background-color: #f4f4f9;
-            margin-top: 50px;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
         }
+
+        .quiz-container {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            padding: 30px;
+            width: 100%;
+            max-width: 600px;
+        }
+
         h1 {
-            color: #333;
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 25px;
+            color: var(--primary);
         }
-        p {
-            color: #666;
+
+        .question {
+            margin-bottom: 25px;
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .question p {
+            font-weight: 600;
+            margin-top: 0;
+            margin-bottom: 12px;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .option:hover {
+            background: #f0fdf4;
+        }
+
+        .option input {
+            cursor: pointer;
+        }
+
+        button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+        }
+
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            display: none;
+        }
+
+        .success-box {
+            background-color: #ecfdf5;
+            color: var(--success);
+            border: 1px solid #a7f3d0;
         }
     </style>
 </head>
 <body>
 
-    <h1>¡Hola Mundo desde GitHub!</h1>
-    <p>Esta es mi primera página web pública y sencilla.</p>
+<div class="quiz-container">
+    <h1>🏆 Trivia de Conocimiento</h1>
+    
+    <form id="quizForm">
+        <!-- Pregunta 1 -->
+        <div class="question">
+            <p>1. ¿Cuál es el océano más grande del mundo?</p>
+            <div class="options">
+                <label class="option"><input type="radio" name="q1" value="A"> A) Océano Atlántico</label>
+                <label class="option"><input type="radio" name="q1" value="B"> B) Océano Índico</label>
+                <label class="option"><input type="radio" name="q1" value="C"> C) Océano Ártico</label>
+                <label class="option"><input type="radio" name="q1" value="D"> D) Océano Pacífico</label>
+                <label class="option"><input type="radio" name="q1" value="E"> E) Océano Antártico</label>
+            </div>
+        </div>
+
+        <!-- Pregunta 2 -->
+        <div class="question">
+            <p>2. ¿Qué elemento químico tiene el símbolo 'O'?</p>
+            <div class="options">
+                <label class="option"><input type="radio" name="q2" value="A"> A) Oro</label>
+                <label class="option"><input type="radio" name="q2" value="B"> B) Oxígeno</label>
+                <label class="option"><input type="radio" name="q2" value="C"> C) Osmio</label>
+                <label class="option"><input type="radio" name="q2" value="D"> D) Ópalo</label>
+                <label class="option"><input type="radio" name="q2" value="E"> E) Orgón</label>
+            </div>
+        </div>
+
+        <button type="button" onclick="calcularResultado()">Enviar Respuestas</button>
+    </form>
+
+    <div id="result" class="success-box"></div>
+</div>
+
+<script>
+    function calcularResultado() {
+        // Clave de respuestas correctas
+        const respuestasCorrectas = {
+            q1: "D", // Pacífico
+            q2: "B"  // Oxígeno
+        };
+
+        let nota = 0;
+        const totalPreguntas = Object.keys(respuestasCorrectas).length;
+        const form = document.getElementById('quizForm');
+
+        // Validar cada respuesta
+        for (let pregunta in respuestasCorrectas) {
+            const seleccionada = form.elements[pregunta].value;
+            if (seleccionada === respuestasCorrectas[pregunta]) {
+                nota++;
+            }
+        }
+
+        // Mostrar el bloque de resultados
+        const contenedorResultado = document.getElementById('result');
+        contenedorResultado.textContent = `¡Has respondido correctamente ${nota} de ${totalPreguntas} preguntas!`;
+        contenedorResultado.style.display = 'block';
+        
+        // Desplazar la pantalla automáticamente al resultado
+        contenedorResultado.scrollIntoView({ behavior: 'smooth' });
+    }
+</script>
 
 </body>
 </html>
