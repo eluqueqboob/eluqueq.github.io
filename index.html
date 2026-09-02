@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz Interactivo Autocalificable</title>
+    <title>Evaluación Docente - Simulacro</title>
     <style>
         :root {
             --primary: #4f46e5;
@@ -139,116 +139,130 @@
 <body>
 
 <div class="quiz-container">
-    <h1>🏆 Trivia de Conocimiento</h1>
-    
-    <form id="quizForm">
-        <!-- Pregunta 1 -->
-        <div class="question">
-            <p>1. ¿Cuál es el océano más grande del mundo?</p>
-            <div class="options">
-                <!-- Limpio: Ya no se ve la RRRR -->
-                <label class="option"><input type="radio" name="q1" value="A"> A) Océano Atlántico</label>
-                <label class="option"><input type="radio" name="q1" value="B"> B) Océano Índico</label>
-                <label class="option"><input type="radio" name="q1" value="C) Océano Ártico"> C) Océano Ártico</label>
-                <label class="option"><input type="radio" name="q1" value="D"> D) Océano Pacífico</label>
-                <label class="option"><input type="radio" name="q1" value="E"> E) Océano Antártico</label>
-            </div>
-        </div>
-
-        <!-- Pregunta 2 -->
-        <div class="question">
-            <p>2. ¿Qué elemento químico tiene el símbolo 'O'?</p>
-            <div class="options">
-                <label class="option"><input type="radio" name="q2" value="A"> A) Oro</label>
-                <label class="option"><input type="radio" name="q2" value="B"> B) Oxígeno</label>
-                <label class="option"><input type="radio" name="q2" value="C"> C) Osmio</label>
-                <label class="option"><input type="radio" name="q2" value="D"> D) Ópalo</label>
-                <label class="option"><input type="radio" name="q2" value="E"> E) Orgón</label>
-            </div>
-        </div>
-
-        <button type="button" id="submitBtn" onclick="calcularResultado()">Enviar Respuestas</button>
-    </form>
-
+    <h1 id="quizTitle">🏆 Simulacro de Evaluación</h1>
+    <form id="quizForm"></form>
     <div id="result" class="success-box"></div>
 </div>
 
 <script>
-    const respuestasCorrectas = {
-        q1: "A", // Atlántico corregido e igual de efectivo
-        q2: "B"  
+    const configuracionQuiz = {
+        titulo: "📋 Simulacro Nombramiento Docente",
+
+        // =========================================================================
+        // ⭐⭐⭐ 1. IDENTIFICADOR DEL EXAMEN ⭐⭐⭐
+        // IMPORTANTE: Cambia el "01" por "02", "03", etc., en cada nuevo examen 
+        // para que no se quede bloqueado con las respuestas del día anterior.
+        // =========================================================================
+        idUnico: "simulacro_nombramiento_01", 
+
+        // =========================================================================
+        // 🛑 [INICIO DE SECCIÓN DE PREGUNTAS] - SOLO REEMPLAZAR ESTE BLOQUE 🛑
+        // =========================================================================
+        preguntas: [
+            {
+                enunciado: "1. ¿Cuál es el océano más grande del mundo?",
+                alternativas: {
+                    A: "A) Océano Atlántico",
+                    B: "B) Océano Índico",
+                    C: "C) Océano Ártico",
+                    D: "D) Océano Pacífico",
+                    E: "E) Océano Antártico"
+                },
+                correcta: "A" 
+            },
+            {
+                enunciado: "2. ¿Qué elemento químico tiene el símbolo 'O'?",
+                alternativas: {
+                    A: "A) Oro",
+                    B: "B) Oxígeno",
+                    C: "C) Osmio",
+                    D: "D) Ópalo",
+                    E: "E) Orgón"
+                },
+                correcta: "B"
+            }
+        ]
+        // =========================================================================
+        // 🛑 [FIN DE SECCIÓN DE PREGUNTAS] - NO MODIFICAR NADA HACIA ABAJO 🛑
+        // =========================================================================
     };
 
-    // Al cargar la página, verificar si el usuario ya hizo el quiz antes
+    // SISTEMA AUTOMÁTICO DE CARGA Y EVALUACIÓN (DEJAR IGUAL)
+    const form = document.getElementById('quizForm');
+    document.getElementById('quizTitle').textContent = configuracionQuiz.titulo;
+
+    configuracionQuiz.preguntas.forEach((prog, index) => {
+        const idPregunta = `q${index}`;
+        let htmlOpciones = '';
+        for (let letra in prog.alternativas) {
+            htmlOpciones += `
+                <label class="option">
+                    <input type="radio" name="${idPregunta}" value="${letra}"> 
+                    ${prog.alternativas[letra]}
+                </label>`;
+        }
+        const divPregunta = document.createElement('div');
+        divPregunta.className = 'question';
+        divPregunta.innerHTML = `<p>${prog.enunciado}</p><div class="options">${htmlOpciones}</div>`;
+        form.appendChild(divPregunta);
+    });
+
+    const botonEnvio = document.createElement('button');
+    botonEnvio.type = "button";
+    botonEnvio.id = "submitBtn";
+    botonEnvio.textContent = "Enviar Respuestas";
+    botonEnvio.onclick = calcularResultado;
+    form.appendChild(botonEnvio);
+
     window.onload = function() {
-        const yaRespondio = localStorage.getItem('quiz_completado'); //
+        const yaRespondio = localStorage.getItem(`completado_${configuracionQuiz.idUnico}`);
         if (yaRespondio) {
-            const notaGuardada = localStorage.getItem('quiz_nota'); //
+            const notaGuardada = localStorage.getItem(`nota_${configuracionQuiz.idUnico}`);
             bloquearQuiz(notaGuardada);
         }
     };
 
     function calcularResultado() {
         let nota = 0;
-        const totalPreguntas = Object.keys(respuestasCorrectas).length;
-        const form = document.getElementById('quizForm');
-
-        // Validar que se haya marcado al menos una respuesta
         let respondidoAlgo = false;
-        for (let pregunta in respuestasCorrectas) {
-            if(form.elements[pregunta].value !== "") respondidoAlgo = true;
-        }
-        if(!respondidoAlgo) {
+        configuracionQuiz.preguntas.forEach((prog, index) => {
+            if (form.elements[`q${index}`].value !== "") respondidoAlgo = true;
+        });
+        if (!respondidoAlgo) {
             alert("Por favor, marca al menos una respuesta antes de enviar.");
             return;
         }
-
-        // Evaluar respuestas y aplicar colores
-        for (let pregunta in respuestasCorrectas) {
-            const inputs = form.querySelectorAll(`input[name="${pregunta}"]`);
-            
+        configuracionQuiz.preguntas.forEach((prog, index) => {
+            const idPregunta = `q${index}`;
+            const inputs = form.querySelectorAll(`input[name="${idPregunta}"]`);
             inputs.forEach(input => {
                 if (input.checked) {
-                    const seleccionada = input.value;
-                    const contenedorOpcion = input.parentElement;
-
-                    if (seleccionada === respuestasCorrectas[pregunta]) {
-                        contenedorOpcion.classList.add('correct');
+                    if (input.value === prog.correcta) {
+                        input.parentElement.classList.add('correct');
                         nota++;
                     } else {
-                        contenedorOpcion.classList.add('incorrect');
+                        input.parentElement.classList.add('incorrect');
                     }
                 }
             });
-        }
-
-        // Guardar bloqueo de forma permanente en el navegador del usuario
-        localStorage.setItem('quiz_completado', 'true'); //
-        localStorage.setItem('quiz_nota', nota); //
-
+        });
+        localStorage.setItem(`completado_${configuracionQuiz.idUnico}`, 'true');
+        localStorage.setItem(`nota_${configuracionQuiz.idUnico}`, nota);
         bloquearQuiz(nota);
     }
 
-    // Función encargada de deshabilitar todo el formulario para congelar el intento
     function bloquearQuiz(nota) {
-        const totalPreguntas = Object.keys(respuestasCorrectas).length;
-        const form = document.getElementById('quizForm');
+        const total = configuracionQuiz.preguntas.length;
         const boton = document.getElementById('submitBtn');
         const contenedorResultado = document.getElementById('result');
-
-        // Desactivar todos los botones e inputs de opción
         boton.disabled = true;
-        boton.textContent = "Quiz Completado (No se permiten más intentos)";
-        
+        boton.textContent = "Quiz Completado (Sin más intentos)";
         const inputs = form.querySelectorAll('input[type="radio"]');
         inputs.forEach(input => input.disabled = true);
-
-        // Mostrar el resultado definitivo
-        contenedorResultado.textContent = `Ya has completado esta evaluación. Tu resultado fue: ${nota} de ${totalPreguntas} correctas.`;
+        contenedorResultado.textContent = `Ya has completado esta evaluación. Tu resultado fue: ${nota} de ${total} correctas.`;
         contenedorResultado.style.display = 'block';
         contenedorResultado.scrollIntoView({ behavior: 'smooth' });
     }
 </script>
-
 </body>
 </html>
