@@ -43,6 +43,37 @@
             color: var(--primary);
         }
 
+        /* Estilos para el bloque del nombre */
+        .user-box {
+            margin-bottom: 25px;
+            background: #f0f4ff;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .user-box label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #374151;
+        }
+
+        .user-box input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 16px;
+            box-sizing: border-box;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .user-box input:focus {
+            border-color: var(--primary);
+        }
+
         .question {
             margin-bottom: 25px;
             background: #f9fafb;
@@ -140,7 +171,18 @@
 
 <div class="quiz-container">
     <h1 id="quizTitle">🏆 Simulacro de Evaluación</h1>
-    <form id="quizForm"></form>
+    
+    <form id="quizForm">
+        <!-- Cajita para ingresar Nombre y Apellido -->
+        <div class="user-box" id="userBlock">
+            <label for="username">Nombres y Apellidos del Docente:</label>
+            <input type="text" id="username" placeholder="Ej. María Inés Quispe Mendoza" required>
+        </div>
+        
+        <!-- Las preguntas se inyectan en este contenedor de forma limpia -->
+        <div id="questionsContainer"></div>
+    </form>
+    
     <div id="result" class="success-box"></div>
 </div>
 
@@ -158,7 +200,7 @@
         // =========================================================================
         // 🛑 [INICIO DE SECCIÓN DE PREGUNTAS] - SOLO REEMPLAZAR ESTE BLOQUE 🛑
         // =========================================================================
-                preguntas: [
+        preguntas: [
             {
                 enunciado: "1. Si al doble de la edad de un docente se le suma 12 años, se obtiene 76 años. ¿Cuál es la edad del docente?",
                 alternativas: {
@@ -215,17 +257,18 @@
                 correcta: "B"
             }
         ]
-
-        
         // =========================================================================
         // 🛑 [FIN DE SECCIÓN DE PREGUNTAS] - NO MODIFICAR NADA HACIA ABAJO 🛑
         // =========================================================================
     };
 
-    // SISTEMA AUTOMÁTICO DE CARGA Y EVALUACIÓN (DEJAR IGUAL)
+    // SISTEMA AUTOMÁTICO DE CARGA Y EVALUACIÓN
     const form = document.getElementById('quizForm');
+    const container = document.getElementById('questionsContainer');
+    const inputNombre = document.getElementById('username');
     document.getElementById('quizTitle').textContent = configuracionQuiz.titulo;
 
+    // Generar preguntas de forma dinámica
     configuracionQuiz.preguntas.forEach((prog, index) => {
         const idPregunta = `q${index}`;
         let htmlOpciones = '';
@@ -239,65 +282,19 @@
         const divPregunta = document.createElement('div');
         divPregunta.className = 'question';
         divPregunta.innerHTML = `<p>${prog.enunciado}</p><div class="options">${htmlOpciones}</div>`;
-        form.appendChild(divPregunta);
+        container.appendChild(divPregunta);
     });
 
+    // Inyección dinámica del botón final
     const botonEnvio = document.createElement('button');
     botonEnvio.type = "button";
     botonEnvio.id = "submitBtn";
     botonEnvio.textContent = "Enviar Respuestas";
     botonEnvio.onclick = calcularResultado;
-    form.appendChild(botonEnvio);
+    container.appendChild(botonEnvio);
 
+    // Comprobación de estado guardado anterior
     window.onload = function() {
         const yaRespondio = localStorage.getItem(`completado_${configuracionQuiz.idUnico}`);
         if (yaRespondio) {
             const notaGuardada = localStorage.getItem(`nota_${configuracionQuiz.idUnico}`);
-            bloquearQuiz(notaGuardada);
-        }
-    };
-
-    function calcularResultado() {
-        let nota = 0;
-        let respondidoAlgo = false;
-        configuracionQuiz.preguntas.forEach((prog, index) => {
-            if (form.elements[`q${index}`].value !== "") respondidoAlgo = true;
-        });
-        if (!respondidoAlgo) {
-            alert("Por favor, marca al menos una respuesta antes de enviar.");
-            return;
-        }
-        configuracionQuiz.preguntas.forEach((prog, index) => {
-            const idPregunta = `q${index}`;
-            const inputs = form.querySelectorAll(`input[name="${idPregunta}"]`);
-            inputs.forEach(input => {
-                if (input.checked) {
-                    if (input.value === prog.correcta) {
-                        input.parentElement.classList.add('correct');
-                        nota++;
-                    } else {
-                        input.parentElement.classList.add('incorrect');
-                    }
-                }
-            });
-        });
-        localStorage.setItem(`completado_${configuracionQuiz.idUnico}`, 'true');
-        localStorage.setItem(`nota_${configuracionQuiz.idUnico}`, nota);
-        bloquearQuiz(nota);
-    }
-
-    function bloquearQuiz(nota) {
-        const total = configuracionQuiz.preguntas.length;
-        const boton = document.getElementById('submitBtn');
-        const contenedorResultado = document.getElementById('result');
-        boton.disabled = true;
-        boton.textContent = "Quiz Completado (Sin más intentos)";
-        const inputs = form.querySelectorAll('input[type="radio"]');
-        inputs.forEach(input => input.disabled = true);
-        contenedorResultado.textContent = `Ya has completado esta evaluación. Tu resultado fue: ${nota} de ${total} correctas.`;
-        contenedorResultado.style.display = 'block';
-        contenedorResultado.scrollIntoView({ behavior: 'smooth' });
-    }
-</script>
-</body>
-</html>
